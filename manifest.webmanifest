@@ -1,0 +1,14 @@
+{
+  "name": "THP Stories",
+  "short_name": "Stories",
+  "description": "Guided impact-story interviews, recordings and transcripts – synced to Google Drive, Docs, Sheets and Calendar.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0000aa",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

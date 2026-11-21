@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0000aa">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="THP Stories">
+  <title>THP Stories · impact stories from the field</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=1.1.0">
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn" id="btnBack" aria-label="Back" hidden><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <img src="assets/icon-192.png" alt="" class="topbar-logo app-mark">
+  <div class="topbar-title"><strong id="topTitle">THP Stories</strong><span id="netStatus" class="net">Checking…</span></div>
+  <button class="icon-btn" id="btnSync" aria-label="Sync"><svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg></button>
+</header>
+
+<!-- story workspace tabs (sticky under the header) -->
+<nav class="storytabs" id="storyTabs" hidden>
+  <button data-st="overview" class="on">Overview</button>
+  <button data-st="interview">Interview</button>
+  <button data-st="record">🎙 Record</button>
+  <button data-st="media">Photos</button>
+  <button data-st="transcribe">Transcribe</button>
+  <button data-st="quotes">Quotes &amp; facts</button>
+  <button data-st="wrap">Wrap up</button>
+</nav>
+
+<main id="main">
+  <!-- ================= STORIES ================= -->
+  <section class="screen" id="screen-stories">
+    <input id="search" type="search" placeholder="Search name, community, project, theme…" autocomplete="off">
+    <div class="filters" id="statusFilters"></div>
+    <div id="storyList"></div>
+    <button class="fab" id="btnNew" aria-label="New story"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  </section>
+
+  <!-- ================= QUOTE BANK ================= -->
+  <section class="screen" id="screen-bank" hidden>
+    <div class="seg two" id="bankSeg"><button data-v="quotes" class="on">Quotes</button><button data-v="facts">Facts</button></div>
+    <input id="bankSearch" type="search" placeholder="Search words, people, places, themes…" autocomplete="off">
+    <div id="bankList"></div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="screen" id="screen-settings" hidden>
+    <h1>Settings</h1>
+    <div class="card">
+      <h2>Connection</h2>
+      <label class="field">Upload link (Apps Script URL)<input id="setUrl" type="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <label class="field">Key<input id="setKey" type="text" autocomplete="off" autocapitalize="off"></label>
+      <button class="btn" id="btnTest">Test connection</button>
+      <p class="hint" id="testMsg"></p>
+    </div>
+    <div class="card">
+      <h2>Me</h2>
+      <label class="field">My name (interviewer)<input id="setName" type="text" autocapitalize="words"></label>
+      <label class="field">Projects I work on <small>(comma separated – suggested when you start a story)</small><input id="setProjects" type="text"></label>
+    </div>
+    <div class="card"><h2>Sync</h2><p class="hint" id="syncInfo"></p></div>
+    <button class="btn primary big" id="btnSaveSettings">Save settings</button>
+  </section>
+
+  <!-- ================= STORY: OVERVIEW ================= -->
+  <section class="screen st" id="st-overview" hidden>
+    <div class="card">
+      <h2>Type of story</h2>
+      <p class="hint" style="margin-top:-4px">Each type has its own guided questions. You can change it later – answers are kept.</p>
+      <div class="type-grid" id="typeCards"></div>
+      <div class="field" id="focusWrap" hidden style="margin-top:12px"><span class="label" id="focusLabel"></span><div class="chips" id="focusChips"></div>
+        <input data-f="focusOther" type="text" placeholder="Describe it" style="margin-top:8px" hidden></div>
+    </div>
+    <div class="card">
+      <label class="field">Working title<input data-f="title" type="text" placeholder="e.g. Ama’s savings group changed her family"></label>
+      <div class="field"><span class="label">Status</span><div class="chips" id="statusChips"></div></div>
+      <div class="row2">
+        <label class="field">Interview date<input data-f="date" type="date"></label>
+        <label class="field">Time<input data-f="time" type="time"></label>
+      </div>
+      <p class="hint" id="calHint" style="margin-top:-8px">While the status is “Planned”, the interview is added to your Google Calendar with reminders.</p>
+      <label class="field">Community<input data-f="community" type="text" list="communityList" autocapitalize="words"></label>
+      <label class="field">Project<input data-f="project" type="text" list="projectList"></label>
+      <label class="field">Interviewer<input data-f="interviewer" type="text" autocapitalize="words"></label>
+    </div>
+    <div class="card">
+      <h2>Languages</h2>
+      <div class="chips multi" id="langChips"></div>
+      <input data-f="langOther" type="text" placeholder="Other language(s)" style="margin-top:8px" hidden>
+    </div>
+    <div class="card">
+      <h2>Themes</h2>
+      <div class="chips multi" id="themeChips"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>People</h2><button class="btn small" id="btnAddPerson">+ Add person</button></div>
+      <div id="peopleList"></div>
+    </div>
+    <div class="card">
+      <h2>Before you start</h2>
+      <div class="checklist" id="prepList"></div>
+    </div>
+  </section>
+
+  <!-- ================= STORY: INTERVIEW ================= -->
+  <section class="screen st" id="st-interview" hidden>
+    <div class="who-bar"><span>Answers from</span><select id="personSel"></select></div>
+    <div class="progress-line"><div id="ivBar"></div></div>
+    <p class="hint" id="ivProgress"></p>
+    <div id="sections"></div>
+  </section>
+
+  <!-- ================= STORY: RECORD ================= -->
+  <section class="screen st" id="st-record" hidden>
+    <div class="recorder" id="recBox">
+      <div class="who-bar"><span>Recording</span><select id="recPerson"></select></div>
+      <button class="rec-btn" id="recBtn" aria-label="Start recording"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg></button>
+      <div class="rec-time" id="recTime">0:00</div>
+      <div class="level"><div id="recLevel"></div></div>
+      <p class="hint" id="recMsg">Tap to record the interview. Keep this app open while recording.</p>
+      <div class="row2" id="recCtl" hidden><button class="btn" id="recPause">⏸ Pause</button><button class="btn danger" id="recStop">⏹ Stop &amp; save</button></div>
+    </div>
+    <div class="card" id="noteBox">
+      <h2>Notes while you listen</h2>
+      <p class="hint" style="margin-top:-6px">Each note gets the time in the recording, so you can jump straight to it later.</p>
+      <div class="markers" id="markers"></div>
+      <div class="note-in"><input id="noteText" type="text" placeholder="Type a note and press Enter…" autocomplete="off"><button class="btn primary small" id="noteAdd">Add</button></div>
+      <ul class="notes" id="liveNotes"></ul>
+    </div>
+    <div class="section-title"><h2>Recordings</h2></div>
+    <div id="recList"></div>
+  </section>
+
+  <!-- ================= STORY: MEDIA ================= -->
+  <section class="screen st" id="st-media" hidden>
+    <div class="photo-row">
+      <label class="btn"><input type="file" accept="image/*,video/*" capture="environment" data-media hidden>📷 Camera</label>
+      <label class="btn"><input type="file" accept="image/*,video/*" multiple data-media hidden>🖼 Gallery</label>
+    </div>
+    <p class="hint">Only photograph people who have given consent – every child needs a guardian’s consent.</p>
+    <div id="mediaList"></div>
+    <div class="card" style="margin-top:14px"><h2>Shot list</h2><div class="checklist" id="shotList"></div></div>
+  </section>
+
+  <!-- ================= STORY: TRANSCRIBE ================= -->
+  <section class="screen st" id="st-transcribe" hidden>
+    <label class="field">Recording<select id="trRec"></select></label>
+    <div class="tr-player" id="trPlayer">
+      <audio id="trAudio" preload="metadata"></audio>
+      <input type="range" id="trSeek" min="0" max="100" step="0.1" value="0">
+      <div class="tr-time"><span id="trNow">0:00</span><span id="trDur">0:00</span></div>
+      <div class="tr-ctl">
+        <button class="btn" id="trBack">⟲ 5s</button>
+        <button class="btn primary" id="trPlay">▶ Play</button>
+        <button class="btn" id="trFwd">5s ⟳</button>
+      </div>
+      <div class="speeds" id="trSpeeds"><button data-r="0.6">0.6×</button><button data-r="0.75">0.75×</button><button data-r="1" class="on">1×</button><button data-r="1.25">1.25×</button><button data-r="1.5">1.5×</button></div>
+      <label class="check toggle"><input type="checkbox" id="trAutoBack" checked><span>Jump back 2 s each time I press play</span></label>
+    </div>
+    <div class="tr-notes" id="trNotes"></div>
+    <div class="card">
+      <div class="card-head"><h2>Transcript</h2><button class="btn small" id="trStamp">+ [time]</button></div>
+      <textarea id="trText" placeholder="Type what you hear… Use + [time] to mark where you are."></textarea>
+      <p class="hint">On a laptop: <b>Esc</b> play/pause · <b>Ctrl+,</b> back 5 s · <b>Ctrl+.</b> forward 5 s · <b>Ctrl+J</b> insert time. Saved as you type.</p>
+    </div>
+  </section>
+
+  <!-- ================= STORY: QUOTES & FACTS ================= -->
+  <section class="screen st" id="st-quotes" hidden>
+    <div class="card-head"><h2>⭐ Quotes</h2><button class="btn small" id="btnAddQuote">+ Quote</button></div>
+    <div id="quoteList"></div>
+    <div class="card-head" style="margin-top:18px"><h2>📊 Facts &amp; figures</h2><button class="btn small" id="btnAddFact">+ Fact</button></div>
+    <p class="hint" style="margin-top:-4px">Numbers you heard – with where they came from and who checked them.</p>
+    <div id="factList"></div>
+  </section>
+
+  <!-- ================= STORY: WRAP UP ================= -->
+  <section class="screen st" id="st-wrap" hidden>
+    <div class="card">
+      <label class="field">Your reflections <small>(setting, feelings, what stood out)</small><textarea data-f="reflections"></textarea></label>
+      <label class="field">Follow-ups <small>(facts to check, people to call, photos still needed)</small><textarea class="short" data-f="followups"></textarea></label>
+    </div>
+    <div class="card summary" id="wrapSummary"></div>
+    <div class="actions">
+      <button class="btn primary big" id="btnDoc">📄 Create story file in Google Docs</button>
+      <div class="row2"><a class="btn" id="lnkDoc" target="_blank" rel="noopener" hidden>Open story file</a><a class="btn" id="lnkFolder" target="_blank" rel="noopener" hidden>Open Drive folder</a></div>
+      <p class="hint" id="docHint">The story file collects everything – people, answers by section, quotes, facts, timed notes, transcripts, photos and a story outline to write from. Make a fresh one any time; earlier versions stay in the folder.</p>
+      <button class="btn danger" id="btnArchive">Archive story</button>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="stories" class="on"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Stories</button>
+  <button data-tab="bank"><svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5H3v8h4M14 21c3 0 7-1 7-8V5h-7v8h4"/></svg>Quotes</button>
+  <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+</nav>
+
+<!-- dialogs -->
+<dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+
+<datalist id="communityList"></datalist>
+<datalist id="projectList"></datalist>
+<div class="toast" id="toast" hidden></div>
+<script src="questions.js?v=1.1.0"></script>
+<script src="app.js?v=1.1.0"></script>
+</body>
+</html>
